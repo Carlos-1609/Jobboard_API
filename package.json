@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.1",
+    "uuid": "^11.1.0"
+  },
+  "type": "module",
+  "license": "ISC",
+  "scripts": {
+    "start": "node server",
+    "dev": "node --watch --env-file=.env server"
+  }
+}
