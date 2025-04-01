@@ -13,10 +13,15 @@ export const userLogin = async (req, res, next) => {
 
     const token = generateToken(user._id);
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, //should be true in prod for https
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
     return res.status(200).json({
       message: "✅ Login successful",
       user,
-      token,
     });
   } catch (error) {
     console.error(error.message);
@@ -26,7 +31,7 @@ export const userLogin = async (req, res, next) => {
 
 export const userSignUp = async (req, res, next) => {
   console.log("User SignUp");
-  const { email, name, password, username, role, resume } = req.body;
+  const { email, name, password, role, resume } = req.body;
   try {
     const user = await User.create({
       email,

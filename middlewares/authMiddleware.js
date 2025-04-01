@@ -1,14 +1,7 @@
 import jwt from "jsonwebtoken";
 
 export const userAuthProtection = (req, res, next) => {
-  let token = "";
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split("")[1];
-  }
+  const token = req.cookies.token;
 
   if (!token) {
     return res
@@ -18,7 +11,8 @@ export const userAuthProtection = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(`This is the decoded token: ${decoded}`);
+    console.log(`This is the decoded token: `, decoded);
+    next();
   } catch (error) {
     console.log(error);
   }
