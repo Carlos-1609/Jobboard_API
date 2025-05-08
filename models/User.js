@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6 },
     role: { type: String, enum: ["recruiter", "jobseeker"], required: true },
     resume: String,
+    resetCode: { type: String },
+    resetCodeExpiry: { type: Date },
   },
   { timestamps: true }
 );

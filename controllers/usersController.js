@@ -1,6 +1,7 @@
 import { generateToken } from "../auth/jwt.js";
 import { v4 as uuidv4 } from "uuid";
 import User from "../models/User.js";
+import nodemailer from "nodemailer";
 
 export const userLogin = async (req, res, next) => {
   try {
@@ -53,5 +54,56 @@ export const userSignUp = async (req, res, next) => {
   } catch (error) {
     console.error(error.message);
     return res.status(400).json({ message: error.message });
+  }
+};
+
+export const userEmailCheck = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "The email you entered is not affiliate with an account",
+      });
+    }
+    //Generate the 6 digit code
+    const recoveryCode = Math.floor(10000 + Math.random() * 900000).toString();
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      secure: true,
+    });
+
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: `${user.name} <${user.email}>`,
+      subject: "Recovery password for job board",
+      text: `Your password reset code is: ${recoveryCode}\n\nThis code expires in 15 minutes.`,
+    };
+
+    // 3. Store code + expiry (e.g., 15 min)
+    user.resetCode = recoveryCode;
+    user.resetCodeExpiry = Date.now() + 15 * 60 * 1000;
+    await user.save();
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email with the recovery code was sent: ", info.response);
+    return res
+      .status(200)
+      .json({ status: "success", message: "Email sent successfully" });
+
+    //return res.status(200).json({ user });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: "error",
+      message: "Error sending email, please try again.",
+    });
   }
 };
