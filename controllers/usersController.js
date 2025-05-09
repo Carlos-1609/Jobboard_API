@@ -2,6 +2,7 @@ import { generateToken } from "../auth/jwt.js";
 import { v4 as uuidv4 } from "uuid";
 import User from "../models/User.js";
 import nodemailer from "nodemailer";
+import bcrypt from "bcryptjs";
 
 export const userLogin = async (req, res, next) => {
   try {
@@ -57,7 +58,7 @@ export const userSignUp = async (req, res, next) => {
   }
 };
 
-export const userEmailCheck = async (req, res, next) => {
+export const userForgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -105,5 +106,54 @@ export const userEmailCheck = async (req, res, next) => {
       status: "error",
       message: "Error sending email, please try again.",
     });
+  }
+};
+
+export const passwordCodeVerification = async (req, res, next) => {
+  try {
+    const { email, verificationCode } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (user.resetCode !== verificationCode) {
+      console.log(user.resetCode);
+      console.log(verificationCode);
+      return res
+        .status(400)
+        .json({ message: "Please enter the correct 6 digit code please." });
+    }
+
+    if (Date.now() > user.resetCodeExpiry) {
+      return res.status(400).json({
+        message: "The code inserted has expired, please request a new one.",
+      });
+    }
+
+    return res.status(200).json({ message: "Code verification was succesful" });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+export const updatePassword = async (req, res, next) => {
+  try {
+    let { email, newPassword } = req.body;
+
+    let user = await User.findOne({ email });
+
+    console.log(user);
+
+    // Assign the raw password; pre('save') will hash it once
+    user.password = newPassword;
+
+    // 5) Clear out the code & expiry so it can’t be reused
+    user.resetCode = undefined;
+    user.resetCodeExpiry = undefined;
+    await user.save();
+
+    return res.status(200).json({ message: "Password has been reset!" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
 };

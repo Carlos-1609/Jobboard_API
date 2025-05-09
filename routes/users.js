@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
-  userEmailCheck,
+  passwordCodeVerification,
+  updatePassword,
+  userForgotPassword,
   userLogin,
   userSignUp,
 } from "../controllers/usersController.js";
@@ -10,7 +12,9 @@ const router = Router();
 
 router.post("/login", userLogin);
 router.post("/signup", userSignUp);
-router.post("/emailCheck", userEmailCheck);
+router.post("/forgot-password", userForgotPassword);
+router.post("/password-code-verification", passwordCodeVerification);
+router.post("/update-password", updatePassword);
 router.get("/check", userAuthProtection, (req, res, next) => {
   res.status(200).json({ message: "You are logged in" });
 });
