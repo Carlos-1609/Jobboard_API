@@ -32,8 +32,9 @@ export const userLogin = async (req, res, next) => {
 };
 
 export const userSignUp = async (req, res, next) => {
-  console.log("User SignUp");
-  const { email, name, password, role, resume } = req.body;
+  //console.log("User SignUp");
+  const { name, email, password, role, resume } = req.body;
+  console.log(req.body);
   try {
     const user = await User.create({
       email,
@@ -48,7 +49,12 @@ export const userSignUp = async (req, res, next) => {
     }
 
     const token = generateToken(user._id);
-
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, //should be true in prod for https
+      sameSite: "Lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
     return res
       .status(200)
       .json({ msg: "User created was succesful", user: user, token: token });

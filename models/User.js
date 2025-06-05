@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    name: String,
+    name: { type: String, required: true },
     email: {
       type: String,
       unique: true,
@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
     password: { type: String, required: true, minlength: 6 },
-    role: { type: String, enum: ["recruiter", "jobseeker"], required: true },
+    role: { type: String, enum: ["recruiter", "job seeker"], required: true },
     resume: String,
     resetCode: { type: String },
     resetCodeExpiry: { type: Date },
